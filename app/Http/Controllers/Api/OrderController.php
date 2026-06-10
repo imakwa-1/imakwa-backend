@@ -78,9 +78,27 @@ class OrderController extends Controller
         });
 
         return response()->json([
-            'message'   => 'Order created',
+            'message'   => 'Order created successfully',
             'order'     => $order->load('items'),
-            'pay_url'   => null, // payment URL attached in Step 12
+            'next_step' => [
+                'action' => 'initialize_payment',
+                'endpoints' => [
+                    'stripe' => [
+                        'url' => '/api/v1/payments/stripe/intent',
+                        'method' => 'POST',
+                        'payload' => ['order_id' => $order->id],
+                    ],
+                    'paystack' => [
+                        'url' => '/api/v1/payments/paystack/init',
+                        'method' => 'POST',
+                        'payload' => [
+                            'order_id' => $order->id,
+                            'email' => $request->shipping_email,
+                        ],
+                    ],
+                ],
+                'selected_gateway' => $request->payment_gateway,
+            ],
         ], 201);
     }
 

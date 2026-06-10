@@ -16,14 +16,27 @@ class PaymentController extends Controller
     public function stripeIntent(Request $request)
     {
         $request->validate([
-            'order_id' => 'required|exists:orders,id',
+            'order_id' => 'required|integer',
+            'order_type' => 'nullable|in:gallery,worldcup', // Optional: specify order type
         ]);
 
-        $order = Order::findOrFail($request->order_id);
-
-        // Ensure order belongs to authenticated user
-        if ($order->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+        // Determine order type and fetch order
+        $orderType = $request->order_type ?? 'gallery';
+        
+        if ($orderType === 'worldcup') {
+            $order = \App\Models\DigitalProductOrder::findOrFail($request->order_id);
+            $amount = $order->amount_paid;
+            $currency = $order->tier->currency ?? 'usd';
+        } else {
+            $order = Order::findOrFail($request->order_id);
+            
+            // Ensure order belongs to authenticated user
+            if ($order->user_id !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            
+            $amount = $order->total;
+            $currency = $order->currency ?? 'usd';
         }
 
         // Check if order is already paid
@@ -35,11 +48,12 @@ class PaymentController extends Controller
 
         try {
             $paymentIntent = \Stripe\PaymentIntent::create([
-                'amount' => $order->total * 100, // Convert to cents
-                'currency' => strtolower($order->currency ?? 'usd'),
+                'amount' => $amount * 100, // Convert to cents
+                'currency' => strtolower($currency),
                 'metadata' => [
                     'order_id' => $order->id,
                     'order_reference' => $order->reference,
+                    'order_type' => $orderType,
                 ],
                 'automatic_payment_methods' => [
                     'enabled' => true,

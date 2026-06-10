@@ -50,12 +50,37 @@ class WorldCupOrderController extends Controller
         });
 
         return response()->json([
-            'message'  => 'Order created — complete payment to receive download link',
-            'order_id' => $order->id,
-            'email'    => $order->email,
-            'amount'   => $tier->price,
-            'currency' => $tier->currency,
-            'pay_url'  => null, // attached in Step 12
+            'message'  => 'Order created successfully',
+            'order' => [
+                'id' => $order->id,
+                'reference' => $order->reference,
+                'email' => $order->email,
+                'amount' => $tier->price,
+                'currency' => $tier->currency,
+                'tier' => $tier->label,
+                'product' => $tier->product->name,
+            ],
+            'next_step' => [
+                'action' => 'initialize_payment',
+                'endpoints' => [
+                    'stripe' => [
+                        'url' => '/api/v1/payments/stripe/intent',
+                        'method' => 'POST',
+                        'payload' => ['order_id' => $order->id],
+                        'note' => 'Use for Stripe payments - returns client_secret',
+                    ],
+                    'paystack' => [
+                        'url' => '/api/v1/payments/paystack/init',
+                        'method' => 'POST',
+                        'payload' => [
+                            'order_id' => $order->id,
+                            'email' => $request->email,
+                        ],
+                        'note' => 'Use for Paystack payments - returns authorization_url',
+                    ],
+                ],
+                'selected_gateway' => $request->payment_gateway,
+            ],
         ], 201);
     }
 
