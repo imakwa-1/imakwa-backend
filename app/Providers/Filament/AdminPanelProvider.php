@@ -26,6 +26,8 @@ use App\Filament\Resources\DigitalProducts\DigitalProductResource;
 use App\Filament\Resources\DigitalProductTiers\DigitalProductTierResource;
 use App\Filament\Resources\NewsletterSubscribers\NewsletterSubscriberResource;
 use App\Filament\Resources\Newsletter\NewsletterResource;
+use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Resources\DigitalProductOrders\DigitalProductOrderResource;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -39,12 +41,20 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->navigationGroups([
+                'Gallery',
+                'World Cup',
+                'Newsletter',
+                'System',
+            ])
             ->resources([
                 ArtistResource::class,
                 ArtworkResource::class,
                 CollectionResource::class,
+                OrderResource::class,
                 DigitalProductResource::class,
                 DigitalProductTierResource::class,
+                DigitalProductOrderResource::class,
                 NewsletterSubscriberResource::class,
                 NewsletterResource::class,
             ])

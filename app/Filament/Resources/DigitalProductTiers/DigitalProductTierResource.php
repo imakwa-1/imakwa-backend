@@ -21,6 +21,8 @@ class DigitalProductTierResource extends Resource
     protected static ?string $model = DigitalProductTier::class;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
     protected static ?string $navigationLabel = 'WC Tiers';
+    protected static string|\UnitEnum|null $navigationGroup = 'World Cup';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $form): Schema
     {
@@ -46,13 +48,41 @@ class DigitalProductTierResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('product.name')->label('Product')->sortable(),
-            TextColumn::make('tier')->badge()->sortable(),
-            TextColumn::make('label')->searchable(),
-            TextColumn::make('price')->money('USD')->sortable(),
-            TextColumn::make('license_count')->label('Total'),
-            TextColumn::make('licenses_sold')->label('Sold'),
-            IconColumn::make('is_active')->boolean(),
+            TextColumn::make('product.name')
+                ->label('Product')
+                ->sortable()
+                ->searchable(),
+            
+            TextColumn::make('tier')
+                ->badge()
+                ->sortable()
+                ->color('warning'),
+            
+            TextColumn::make('label')
+                ->searchable()
+                ->weight('bold'),
+            
+            TextColumn::make('price')
+                ->money('USD')
+                ->sortable(),
+            
+            TextColumn::make('licenses_sold')
+                ->label('Sold')
+                ->badge()
+                ->color('success'),
+            
+            TextColumn::make('license_count')
+                ->label('Total'),
+            
+            TextColumn::make('availability')
+                ->label('Available')
+                ->getStateUsing(fn ($record) => $record->license_count - $record->licenses_sold)
+                ->badge()
+                ->color(fn ($state) => $state > 0 ? 'success' : 'danger'),
+            
+            IconColumn::make('is_active')
+                ->boolean()
+                ->label('Active'),
         ])
         ->filters([
             SelectFilter::make('tier')->options([

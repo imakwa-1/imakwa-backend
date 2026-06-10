@@ -19,31 +19,92 @@ class DigitalProductResource extends Resource
     protected static ?string $model = DigitalProduct::class;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
     protected static ?string $navigationLabel = 'WC Products';
+    protected static string|\UnitEnum|null $navigationGroup = 'World Cup';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $form): Schema
     {
         return $form->components([
-            TextInput::make('name')->required(),
-            TextInput::make('country')->required(),
-            TextInput::make('flag_emoji'),
-            Textarea::make('description'),
-            TextInput::make('cover_image'),
-            DateTimePicker::make('closes_at')->label('Store Closes At'),
-            Toggle::make('is_active')->default(true),
+            TextInput::make('name')
+                ->required()
+                ->maxLength(255)
+                ->label('Product Name')
+                ->placeholder('e.g., Nigeria World Cup Collection'),
+            
+            TextInput::make('country')
+                ->required()
+                ->maxLength(255)
+                ->label('Country'),
+            
+            TextInput::make('flag_emoji')
+                ->maxLength(10)
+                ->label('Flag Emoji')
+                ->placeholder('🇳🇬')
+                ->helperText('Optional flag emoji for display'),
+            
+            Textarea::make('description')
+                ->rows(3)
+                ->maxLength(1000)
+                ->label('Description'),
+            
+            TextInput::make('cover_image')
+                ->url()
+                ->maxLength(255)
+                ->label('Cover Image URL')
+                ->placeholder('https://...'),
+            
+            DateTimePicker::make('closes_at')
+                ->label('Store Closes At')
+                ->helperText('Set when this product becomes unavailable')
+                ->native(false),
+            
+            Toggle::make('is_active')
+                ->label('Active')
+                ->helperText('Make this product available for purchase')
+                ->default(true),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('flag_emoji')->label(''),
-            TextColumn::make('name')->searchable(),
-            TextColumn::make('country')->sortable(),
-            TextColumn::make('closes_at')->dateTime()->sortable()->label('Closes'),
-            IconColumn::make('is_active')->boolean(),
-            TextColumn::make('created_at')->dateTime()->sortable(),
+            TextColumn::make('flag_emoji')
+                ->label('')
+                ->size('lg'),
+            
+            TextColumn::make('name')
+                ->searchable()
+                ->sortable()
+                ->weight('bold'),
+            
+            TextColumn::make('country')
+                ->searchable()
+                ->sortable(),
+            
+            TextColumn::make('closes_at')
+                ->dateTime('M j, Y g:i A')
+                ->sortable()
+                ->label('Closes')
+                ->color(fn ($record) => $record->closes_at && $record->closes_at->isPast() ? 'danger' : 'success'),
+            
+            IconColumn::make('is_active')
+                ->boolean()
+                ->label('Active'),
+            
+            TextColumn::make('tiers_count')
+                ->counts('tiers')
+                ->label('Tiers')
+                ->badge(),
+            
+            TextColumn::make('created_at')
+                ->dateTime('M j, Y')
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
         ])
-        ->filters([TernaryFilter::make('is_active')]);
+        ->filters([
+            TernaryFilter::make('is_active')->label('Active Products'),
+        ])
+        ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
