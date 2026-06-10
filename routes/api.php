@@ -47,6 +47,21 @@ Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
     Route::post('/toggle',[App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
 });
 
+// User Profile & Account (auth required)
+Route::middleware('auth:sanctum')->prefix('user')->group(function () {
+    Route::get('/profile',              [App\Http\Controllers\Api\UserController::class, 'profile']);
+    Route::put('/profile',              [App\Http\Controllers\Api\UserController::class, 'updateProfile']);
+    Route::get('/orders',               [App\Http\Controllers\Api\UserController::class, 'orders']);
+    Route::get('/favorites',            [App\Http\Controllers\Api\UserController::class, 'favorites']);
+    Route::get('/digital-orders',       [App\Http\Controllers\Api\UserController::class, 'digitalOrders']);
+});
+
+// Downloads (public with token)
+Route::prefix('downloads')->group(function () {
+    Route::get('/{token}',              [App\Http\Controllers\Api\DownloadController::class, 'download']);
+    Route::get('/{token}/info',         [App\Http\Controllers\Api\DownloadController::class, 'info']);
+});
+
 
 // Orders (auth required)
 Route::middleware('auth:sanctum')->prefix('orders')->group(function () {

@@ -35,4 +35,36 @@ class DigitalProductOrder extends Model {
     public function tier() {
         return $this->belongsTo(DigitalProductTier::class, 'digital_product_tier_id');
     }
+
+    /**
+     * Generate a unique download token and set expiration
+     */
+    public function generateDownloadToken(): string
+    {
+        $this->download_token = Str::random(64);
+        $this->token_expires_at = now()->addDays(30);
+        $this->token_used = false;
+        $this->save();
+
+        return $this->download_token;
+    }
+
+    /**
+     * Check if download token is valid
+     */
+    public function isTokenValid(): bool
+    {
+        return !$this->token_used && 
+               $this->token_expires_at && 
+               $this->token_expires_at->isFuture();
+    }
+
+    /**
+     * Mark token as used
+     */
+    public function markTokenAsUsed(): void
+    {
+        $this->token_used = true;
+        $this->save();
+    }
 }

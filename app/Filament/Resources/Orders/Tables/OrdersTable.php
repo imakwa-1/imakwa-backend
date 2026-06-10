@@ -15,62 +15,54 @@ class OrdersTable
     {
         return $table
             ->columns([
+                TextColumn::make('user_id')
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('reference')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable(),
-                TextColumn::make('user.name')
-                    ->label('Customer')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('shipping_email')
-                    ->label('Email')
-                    ->searchable()
-                    ->copyable()
-                    ->toggleable(),
-                TextColumn::make('total')
-                    ->money('USD')
-                    ->sortable(),
-                TextColumn::make('payment_status')
-                    ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'paid',
-                        'danger' => 'failed',
-                    ])
-                    ->sortable(),
-                TextColumn::make('status')
-                    ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'info' => 'processing',
-                        'success' => 'shipped',
-                        'success' => 'delivered',
-                        'danger' => 'cancelled',
-                    ])
-                    ->sortable(),
-                TextColumn::make('payment_gateway')
-                    ->badge()
-                    ->toggleable(),
+                    ->searchable(),
                 TextColumn::make('fulfillment_type')
-                    ->badge()
-                    ->toggleable(),
+                    ->badge(),
+                TextColumn::make('status')
+                    ->badge(),
+                TextColumn::make('payment_gateway')
+                    ->badge(),
+                TextColumn::make('payment_reference')
+                    ->searchable(),
+                TextColumn::make('payment_intent_id')
+                    ->searchable(),
+                TextColumn::make('paystack_reference')
+                    ->searchable(),
+                TextColumn::make('payment_status')
+                    ->badge(),
+                TextColumn::make('subtotal')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('shipping_cost')
+                    ->money()
+                    ->sortable(),
+                TextColumn::make('total')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('currency')
+                    ->searchable(),
                 TextColumn::make('shipping_name')
-                    ->label('Ship To')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
+                TextColumn::make('shipping_email')
+                    ->searchable(),
+                TextColumn::make('shipping_phone')
+                    ->searchable(),
+                TextColumn::make('shipping_address')
+                    ->searchable(),
                 TextColumn::make('shipping_city')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
                 TextColumn::make('shipping_country')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
+                TextColumn::make('shipping_postal_code')
+                    ->searchable(),
                 TextColumn::make('created_at')
-                    ->label('Order Date')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -87,7 +79,6 @@ class OrdersTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ])
-            ->defaultSort('created_at', 'desc');
+            ]);
     }
 }
