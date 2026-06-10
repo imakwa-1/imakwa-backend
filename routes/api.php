@@ -82,6 +82,10 @@ Route::prefix('worldcup')->group(function () {
     Route::post('/checkout',           [App\Http\Controllers\Api\WorldCupOrderController::class, 'store']);
     Route::get('/download/{token}',    [App\Http\Controllers\Api\WorldCupOrderController::class, 'download']);
     Route::get('/order-status/{id}',   [App\Http\Controllers\Api\WorldCupOrderController::class, 'status']);
+    Route::post('/stripe/init',        [App\Http\Controllers\Api\WorldCupOrderController::class, 'stripeInit']);
+    Route::post('/paystack/init',      [App\Http\Controllers\Api\WorldCupOrderController::class, 'paystackInit']);
+    Route::get('/order-by-reference/{reference}', [App\Http\Controllers\Api\WorldCupOrderController::class, 'orderByReference']);
+    Route::post('/lookup',             [App\Http\Controllers\Api\WorldCupOrderController::class, 'lookup']);
 });
 
 // Webhooks
