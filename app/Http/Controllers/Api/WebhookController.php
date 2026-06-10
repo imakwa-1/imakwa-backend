@@ -85,7 +85,22 @@ class WebhookController extends Controller
             }
         }
 
-        Log::info('Gallery order fulfilled: ' . $reference);
+        // Send order confirmation email
+        try {
+            \Illuminate\Support\Facades\Mail::to($order->shipping_email)
+                ->send(new \App\Mail\GalleryOrderConfirmed($order));
+            
+            Log::info('Gallery order fulfilled and email sent', [
+                'reference' => $reference,
+                'email' => $order->shipping_email,
+                'order_id' => $order->id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send gallery order email', [
+                'reference' => $reference,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     private function fulfillDigitalOrder($orderId, $paymentRef)
@@ -106,7 +121,22 @@ class WebhookController extends Controller
             $tier->increment('licenses_sold');
         }
 
-        // Send download email — placeholder for Step 13
-        Log::info('Digital order fulfilled: ' . $orderId . ' | token: ' . $order->download_token);
+        // Send download email
+        try {
+            \Illuminate\Support\Facades\Mail::to($order->email)
+                ->send(new \App\Mail\DigitalOrderPurchased($order));
+            
+            Log::info('Digital order fulfilled and email sent', [
+                'order_id' => $orderId,
+                'reference' => $order->reference,
+                'email' => $order->email,
+                'token' => $order->download_token,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send digital order email', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
