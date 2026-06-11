@@ -32,6 +32,7 @@ class ArtistResource extends Resource
             Textarea::make('bio')->columnSpanFull(),
             FileUpload::make('profile_image')
                 ->image()
+                ->disk('public')
                 ->directory('artists')
                 ->columnSpanFull(),
             TextInput::make('instagram'),

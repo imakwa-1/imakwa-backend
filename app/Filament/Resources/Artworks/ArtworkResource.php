@@ -33,6 +33,7 @@ class ArtworkResource extends Resource
                 ->label('Artwork Images')
                 ->image()
                 ->multiple()
+                ->disk('public')
                 ->directory('artworks')
                 ->maxFiles(10)
                 ->reorderable()

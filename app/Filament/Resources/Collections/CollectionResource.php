@@ -30,6 +30,7 @@ class CollectionResource extends Resource
             Textarea::make('description')->columnSpanFull(),
             FileUpload::make('cover_image')
                 ->image()
+                ->disk('public')
                 ->directory('collections')
                 ->columnSpanFull(),
             Toggle::make('is_active')->default(true),

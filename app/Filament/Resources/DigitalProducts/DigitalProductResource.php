@@ -51,6 +51,7 @@ class DigitalProductResource extends Resource
             
             FileUpload::make('cover_image')
                 ->image()
+                ->disk('public')
                 ->directory('worldcup-products')
                 ->label('Cover Image')
                 ->columnSpanFull(),

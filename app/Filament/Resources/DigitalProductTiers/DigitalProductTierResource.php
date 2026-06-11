@@ -40,6 +40,7 @@ class DigitalProductTierResource extends Resource
             FileUpload::make('file_path')
                 ->label('Digital File')
                 ->acceptedFileTypes(['application/pdf', 'application/zip', 'application/x-zip-compressed'])
+                ->disk('public')
                 ->directory('worldcup-files')
                 ->maxSize(102400) // 100MB
                 ->helperText('Upload PDF or ZIP file (max 100MB)')
