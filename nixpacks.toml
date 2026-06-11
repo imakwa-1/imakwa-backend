@@ -18,7 +18,7 @@ cmds = [
 ]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
+cmds = ["/usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction"]
 
 [phases.build]
 cmds = [
