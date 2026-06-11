@@ -8,6 +8,25 @@ Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
 
+// Diagnostic endpoint - check if admin exists
+Route::get('/check-admin', function () {
+    $admin = \App\Models\User::where('email', 'admin@imakwa.com')->first();
+    
+    if (!$admin) {
+        return response()->json([
+            'exists' => false,
+            'message' => 'Admin user not found'
+        ]);
+    }
+    
+    return response()->json([
+        'exists' => true,
+        'email' => $admin->email,
+        'role' => $admin->role,
+        'can_access_panel' => $admin->canAccessPanel(\Filament\Facades\Filament::getCurrentPanel()),
+    ]);
+});
+
 // Temporary route to seed admin - DELETE AFTER USE
 Route::get('/setup-admin-urgent', function () {
     try {
