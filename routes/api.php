@@ -32,6 +32,12 @@ Route::prefix('worldcup')->group(function () {
     Route::get('/products',          [App\Http\Controllers\Api\WorldCupController::class, 'index']);
     Route::get('/products/{id}',     [App\Http\Controllers\Api\WorldCupController::class, 'show']);
     Route::get('/countdown',         [App\Http\Controllers\Api\WorldCupController::class, 'countdown']);
+    
+    // Live Scores System (Phase 1)
+    Route::get('/fixtures',          [App\Http\Controllers\Api\LiveScoreController::class, 'fixtures']);
+    Route::get('/upcoming',          [App\Http\Controllers\Api\LiveScoreController::class, 'upcoming']);
+    Route::get('/live-scores',       [App\Http\Controllers\Api\LiveScoreController::class, 'liveScores']);
+    Route::get('/scores-status',     [App\Http\Controllers\Api\LiveScoreController::class, 'scoresStatus']);
 });
 
 // Cart (with session ID enforcement for guests)
