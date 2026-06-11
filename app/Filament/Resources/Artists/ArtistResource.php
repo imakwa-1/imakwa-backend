@@ -39,6 +39,9 @@ class ArtistResource extends Resource
             TextInput::make('website'),
             Toggle::make('is_verified'),
             Toggle::make('is_active')->default(true),
+            Toggle::make('is_featured')
+                ->label('Feature as Spotlight Artist')
+                ->helperText('Only ONE artist should be featured at a time'),
         ]);
     }
 

@@ -30,6 +30,7 @@ Route::prefix('gallery')->group(function () {
 // Gallery routes (also available without /gallery prefix for frontend compatibility)
 Route::get('/artworks',           [App\Http\Controllers\Api\ArtworkController::class, 'index']);
 Route::get('/artworks/{id}',      [App\Http\Controllers\Api\ArtworkController::class, 'show']);
+Route::get('/featured-artist',    [App\Http\Controllers\Api\ArtworkController::class, 'featured']);
 Route::get('/artists',            [App\Http\Controllers\Api\ArtistController::class, 'index']);
 Route::get('/artists/{id}',       [App\Http\Controllers\Api\ArtistController::class, 'show']);
 Route::get('/collections',        [App\Http\Controllers\Api\CollectionController::class, 'index']);

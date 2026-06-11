@@ -33,4 +33,23 @@ class ArtworkController extends Controller
 
         return response()->json($artwork);
     }
+
+    public function featured()
+    {
+        $artist = \App\Models\Artist::with(['artworks' => function($q) {
+            $q->where('is_active', true)
+              ->where('is_approved', true)
+              ->latest()
+              ->limit(4);
+        }])
+        ->where('is_featured', true)
+        ->where('is_active', true)
+        ->first();
+
+        if (!$artist) {
+            return response()->json(['message' => 'No featured artist'], 404);
+        }
+
+        return response()->json($artist);
+    }
 }
