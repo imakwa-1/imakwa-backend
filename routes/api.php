@@ -27,6 +27,14 @@ Route::prefix('gallery')->group(function () {
     Route::get('/collections/{id}',   [App\Http\Controllers\Api\CollectionController::class, 'show']);
 });
 
+// Gallery routes (also available without /gallery prefix for frontend compatibility)
+Route::get('/artworks',           [App\Http\Controllers\Api\ArtworkController::class, 'index']);
+Route::get('/artworks/{id}',      [App\Http\Controllers\Api\ArtworkController::class, 'show']);
+Route::get('/artists',            [App\Http\Controllers\Api\ArtistController::class, 'index']);
+Route::get('/artists/{id}',       [App\Http\Controllers\Api\ArtistController::class, 'show']);
+Route::get('/collections',        [App\Http\Controllers\Api\CollectionController::class, 'index']);
+Route::get('/collections/{id}',   [App\Http\Controllers\Api\CollectionController::class, 'show']);
+
 // World Cup
 Route::prefix('worldcup')->group(function () {
     Route::get('/products',          [App\Http\Controllers\Api\WorldCupController::class, 'index']);
