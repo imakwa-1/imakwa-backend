@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Artworks\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -21,6 +22,14 @@ class ArtworkForm
                     ->required(),
                 Textarea::make('description')
                     ->default(null)
+                    ->columnSpanFull(),
+                FileUpload::make('images')
+                    ->label('Artwork Images')
+                    ->image()
+                    ->multiple()
+                    ->maxFiles(10)
+                    ->reorderable()
+                    ->helperText('Upload multiple images. The first image will be set as primary.')
                     ->columnSpanFull(),
                 TextInput::make('medium')
                     ->default(null),

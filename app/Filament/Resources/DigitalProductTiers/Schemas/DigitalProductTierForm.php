@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DigitalProductTiers\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -24,6 +25,12 @@ class DigitalProductTierForm
                     ->required(),
                 Textarea::make('description')
                     ->default(null)
+                    ->columnSpanFull(),
+                FileUpload::make('file_path')
+                    ->label('Digital File')
+                    ->helperText('Upload the digital product file (PDF, ZIP, etc.) that users will download after purchase.')
+                    ->acceptedFileTypes(['application/pdf', 'application/zip', 'application/x-zip-compressed'])
+                    ->maxSize(102400) // 100MB
                     ->columnSpanFull(),
                 TextInput::make('price')
                     ->required()
