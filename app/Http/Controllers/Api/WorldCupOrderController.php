@@ -84,30 +84,6 @@ class WorldCupOrderController extends Controller
         ], 201);
     }
 
-    public function download($token)
-    {
-        $order = DigitalProductOrder::where('download_token', $token)
-            ->where('payment_status', 'paid')
-            ->firstOrFail();
-
-        if ($order->token_used) {
-            return response()->json(['message' => 'This download link has already been used'], 403);
-        }
-
-        if ($order->token_expires_at && $order->token_expires_at->isPast()) {
-            return response()->json(['message' => 'This download link has expired'], 403);
-        }
-
-        $order->update(['token_used' => true]);
-
-        $downloadUrl = $order->tier->download_url;
-
-        return response()->json([
-            'message'      => 'Download ready',
-            'download_url' => $downloadUrl,
-        ]);
-    }
-
     public function status($orderId)
     {
         $order = DigitalProductOrder::with('tier.product')

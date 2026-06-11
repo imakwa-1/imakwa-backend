@@ -104,7 +104,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $orders = Order::with('items')
+        $orders = Order::with(['items.itemable.artist', 'items.itemable.primaryImage'])
             ->where('user_id', $request->user()->id)
             ->orderByDesc('created_at')
             ->get();

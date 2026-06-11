@@ -8,6 +8,8 @@ Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login',    [AuthController::class, 'login']);
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('/reset-password',  [AuthController::class, 'resetPassword']);
 
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);
@@ -32,8 +34,8 @@ Route::prefix('worldcup')->group(function () {
     Route::get('/countdown',         [App\Http\Controllers\Api\WorldCupController::class, 'countdown']);
 });
 
-// Cart
-Route::prefix('cart')->group(function () {
+// Cart (with session ID enforcement for guests)
+Route::prefix('cart')->middleware([App\Http\Middleware\EnsureSessionId::class])->group(function () {
     Route::get('/',                [App\Http\Controllers\Api\CartController::class, 'index']);
     Route::post('/items',          [App\Http\Controllers\Api\CartController::class, 'add']);
     Route::delete('/items/{itemId}', [App\Http\Controllers\Api\CartController::class, 'remove']);
@@ -51,6 +53,7 @@ Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/profile',              [App\Http\Controllers\Api\UserController::class, 'profile']);
     Route::put('/profile',              [App\Http\Controllers\Api\UserController::class, 'updateProfile']);
+    Route::post('/change-password',     [App\Http\Controllers\Api\AuthController::class, 'changePassword']);
     Route::get('/orders',               [App\Http\Controllers\Api\UserController::class, 'orders']);
     Route::get('/favorites',            [App\Http\Controllers\Api\UserController::class, 'favorites']);
     Route::get('/digital-orders',       [App\Http\Controllers\Api\UserController::class, 'digitalOrders']);
@@ -80,7 +83,6 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 // World Cup Checkout
 Route::prefix('worldcup')->group(function () {
     Route::post('/checkout',           [App\Http\Controllers\Api\WorldCupOrderController::class, 'store']);
-    Route::get('/download/{token}',    [App\Http\Controllers\Api\WorldCupOrderController::class, 'download']);
     Route::get('/order-status/{id}',   [App\Http\Controllers\Api\WorldCupOrderController::class, 'status']);
     Route::post('/stripe/init',        [App\Http\Controllers\Api\WorldCupOrderController::class, 'stripeInit']);
     Route::post('/paystack/init',      [App\Http\Controllers\Api\WorldCupOrderController::class, 'paystackInit']);

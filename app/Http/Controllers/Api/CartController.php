@@ -15,7 +15,14 @@ class CartController extends Controller
         if ($request->user()) {
             return Cart::firstOrCreate(['user_id' => $request->user()->id]);
         }
+        
         $sessionId = $request->header('X-Session-ID');
+        
+        // Defensive null guard (should not happen with middleware in place)
+        if (!$sessionId) {
+            abort(400, 'X-Session-ID header is required for guest cart access.');
+        }
+        
         return Cart::firstOrCreate(['session_id' => $sessionId]);
     }
 

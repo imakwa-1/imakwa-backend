@@ -40,8 +40,15 @@ class DownloadController extends Controller
         $product = $order->tier->digital_product;
         $tier = $order->tier;
 
+        // Add null guard for product
+        if (!$product) {
+            return response()->json([
+                'message' => 'Product not found. Please contact support.'
+            ], 404);
+        }
+
         // Check if file exists
-        $filePath = $tier->file_path; // Assuming tier has file_path column
+        $filePath = $tier->file_path;
         
         if (!$filePath || !Storage::exists($filePath)) {
             return response()->json([
@@ -76,6 +83,13 @@ class DownloadController extends Controller
         if (!$order) {
             return response()->json([
                 'message' => 'Invalid download link'
+            ], 404);
+        }
+
+        // Add null guard for product relationship
+        if (!$order->tier || !$order->tier->digital_product) {
+            return response()->json([
+                'message' => 'Product information not found. Please contact support.'
             ], 404);
         }
 
