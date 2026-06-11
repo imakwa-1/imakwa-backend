@@ -23,7 +23,7 @@ Route::get('/check-admin', function () {
         'exists' => true,
         'email' => $admin->email,
         'role' => $admin->role,
-        'can_access_panel' => $admin->canAccessPanel(\Filament\Facades\Filament::getCurrentPanel()),
+        'is_admin' => $admin->isAdmin(),
     ]);
 });
 
