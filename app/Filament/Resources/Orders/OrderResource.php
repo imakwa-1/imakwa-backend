@@ -20,9 +20,13 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static ?string $recordTitleAttribute = 'refrence';
+    protected static string|\UnitEnum|null $navigationGroup = 'Sales';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $recordTitleAttribute = 'reference';
 
     public static function form(Schema $schema): Schema
     {
@@ -50,9 +54,7 @@ class OrderResource extends Resource
     {
         return [
             'index' => ListOrders::route('/'),
-            'create' => CreateOrder::route('/create'),
             'view' => ViewOrder::route('/{record}'),
-            'edit' => EditOrder::route('/{record}/edit'),
         ];
     }
 }

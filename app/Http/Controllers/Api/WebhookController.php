@@ -80,9 +80,10 @@ class WebhookController extends Controller
 
         $order->update([
             'payment_status'    => 'paid',
-            'status'            => 'processing',
             'payment_reference' => $paymentRef,
         ]);
+
+        $order->transitionTo('processing', 'Payment confirmed via webhook.');
 
         // Decrement stock for each artwork
         foreach ($order->items as $item) {
@@ -92,23 +93,6 @@ class WebhookController extends Controller
                     $artwork->decrementStock($item->quantity);
                 }
             }
-        }
-
-        // Send order confirmation email
-        try {
-            \Illuminate\Support\Facades\Mail::to($order->shipping_email)
-                ->send(new \App\Mail\GalleryOrderConfirmed($order));
-            
-            Log::info('Gallery order fulfilled and email sent', [
-                'reference' => $reference,
-                'email' => $order->shipping_email,
-                'order_id' => $order->id,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Failed to send gallery order email', [
-                'reference' => $reference,
-                'error' => $e->getMessage(),
-            ]);
         }
     }
 

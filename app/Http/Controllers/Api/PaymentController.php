@@ -208,23 +208,19 @@ class PaymentController extends Controller
                     if ($order->payment_status !== 'paid') {
                         $order->update([
                             'payment_status' => 'paid',
-                            'status' => 'processing',
                             'payment_reference' => $reference,
                         ]);
 
-                        // Mark artworks as sold
+                        $order->transitionTo('processing', 'Payment confirmed via direct verification.');
+
+                        // Decrement stock for each artwork
                         foreach ($order->items as $item) {
                             if ($item->itemable_type === \App\Models\Artwork::class) {
-                                \App\Models\Artwork::where('id', $item->itemable_id)->update(['status' => 'sold']);
+                                $artwork = $item->itemable;
+                                if ($artwork) {
+                                    $artwork->decrementStock($item->quantity);
+                                }
                             }
-                        }
-
-                        // Send order confirmation email
-                        try {
-                            \Illuminate\Support\Facades\Mail::to($order->shipping_email)
-                                ->send(new \App\Mail\GalleryOrderConfirmed($order));
-                        } catch (\Exception $e) {
-                            \Illuminate\Support\Facades\Log::error('Failed to send gallery order email in verify route: ' . $e->getMessage());
                         }
                     }
 

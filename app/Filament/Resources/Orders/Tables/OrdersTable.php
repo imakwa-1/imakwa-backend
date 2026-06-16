@@ -4,10 +4,13 @@ namespace App\Filament\Resources\Orders\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrdersTable
 {
@@ -15,65 +18,90 @@ class OrdersTable
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('reference')
-                    ->searchable(),
-                TextColumn::make('fulfillment_type')
-                    ->badge(),
-                TextColumn::make('status')
-                    ->badge(),
-                TextColumn::make('payment_gateway')
-                    ->badge(),
-                TextColumn::make('payment_reference')
-                    ->searchable(),
-                TextColumn::make('payment_intent_id')
-                    ->searchable(),
-                TextColumn::make('paystack_reference')
-                    ->searchable(),
-                TextColumn::make('payment_status')
-                    ->badge(),
-                TextColumn::make('subtotal')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('shipping_cost')
-                    ->money()
-                    ->sortable(),
-                TextColumn::make('total')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('currency')
-                    ->searchable(),
-                TextColumn::make('shipping_name')
-                    ->searchable(),
-                TextColumn::make('shipping_email')
-                    ->searchable(),
-                TextColumn::make('shipping_phone')
-                    ->searchable(),
-                TextColumn::make('shipping_address')
-                    ->searchable(),
-                TextColumn::make('shipping_city')
-                    ->searchable(),
-                TextColumn::make('shipping_country')
-                    ->searchable(),
-                TextColumn::make('shipping_postal_code')
-                    ->searchable(),
+                    ->label('Order ID')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
+                TextColumn::make('customer_name')
+                    ->label('Customer')
+                    ->getStateUsing(fn($record) => $record->customer_name)
+                    ->searchable(['shipping_name'])
+                    ->sortable('shipping_name'),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Date')
+                    ->dateTime('M d, Y')
+                    ->sortable(),
+
+                TextColumn::make('total')
+                    ->label('Total')
+                    ->money(fn($record) => $record->currency)
+                    ->sortable(),
+
+                TextColumn::make('payment_status')
+                    ->label('Payment')
+                    ->badge()
+                    ->color(fn($state) => match($state) {
+                        'paid' => 'success',
+                        'pending' => 'warning',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    }),
+
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn($state) => match($state) {
+                        'pending' => 'warning',
+                        'processing' => 'info',
+                        'shipped' => 'primary',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    }),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'processing' => 'Processing',
+                        'shipped' => 'Shipped',
+                        'delivered' => 'Delivered',
+                        'cancelled' => 'Cancelled',
+                    ]),
+
+                SelectFilter::make('payment_status')
+                    ->options([
+                        'paid' => 'Paid',
+                        'pending' => 'Pending',
+                        'failed' => 'Failed',
+                    ]),
+
+                Filter::make('period')
+                    ->form([
+                        Select::make('period')
+                            ->options([
+                                'today' => 'Today',
+                                'week' => 'This Week',
+                                'month' => 'This Month',
+                            ]),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['period'],
+                            fn (Builder $query, $period): Builder => match($period) {
+                                'today' => $query->whereDate('created_at', today()),
+                                'week' => $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]),
+                                'month' => $query->whereMonth('created_at', now()->month),
+                                default => $query,
+                            }
+                        );
+                    }),
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

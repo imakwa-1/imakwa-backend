@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\OrderResource;
-use Filament\Actions\CreateAction;
+use App\Filament\Resources\Orders\Widgets\OrderStatsWidget;
 use Filament\Resources\Pages\ListRecords;
 
 class ListOrders extends ListRecords
@@ -13,7 +13,14 @@ class ListOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // Orders are created through frontend checkout, not admin panel
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            OrderStatsWidget::class,
         ];
     }
 }
