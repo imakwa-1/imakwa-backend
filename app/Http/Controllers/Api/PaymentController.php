@@ -111,14 +111,25 @@ class PaymentController extends Controller
             return response()->json(['error' => 'The email field is required.'], 422);
         }
 
+        $amount = $order->total;
+        $currency = $order->currency ?? 'USD';
+
+        if ($currency === 'USD' && env('PAYSTACK_CONVERT_TO_NGN', true)) {
+            $rate = (float) env('PAYSTACK_USD_TO_NGN_RATE', 1500.0);
+            $amount = $amount * $rate;
+            $currency = 'NGN';
+        }
+
+        $amountInMinorUnits = (int) round($amount * 100);
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('services.paystack.secret_key'),
                 'Content-Type' => 'application/json',
             ])->post('https://api.paystack.co/transaction/initialize', [
                 'email' => $email,
-                'amount' => $order->total * 100, // Convert to kobo (for NGN) or cents
-                'currency' => $order->currency ?? 'NGN',
+                'amount' => $amountInMinorUnits,
+                'currency' => $currency,
                 'reference' => $order->reference,
                 'metadata' => [
                     'order_id' => $order->id,
