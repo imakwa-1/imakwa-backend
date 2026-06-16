@@ -39,14 +39,33 @@ class DigitalProductTierForm
                 TextInput::make('currency')
                     ->required()
                     ->default('USD'),
+                
+                // Legacy License System (kept for backward compatibility)
                 TextInput::make('license_count')
-                    ->required()
+                    ->label('License Count (Legacy)')
+                    ->helperText('Legacy field - use Stock Quantity below instead')
                     ->numeric()
                     ->default(0),
                 TextInput::make('licenses_sold')
-                    ->required()
+                    ->label('Licenses Sold (Legacy)')
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->disabled(),
+                
+                // New Inventory System
+                TextInput::make('stock_quantity')
+                    ->label('Stock Quantity')
+                    ->helperText('Leave empty for unlimited digital copies. Set a number for limited edition.')
+                    ->numeric()
+                    ->placeholder('Unlimited')
+                    ->minValue(0),
+                TextInput::make('stock_sold')
+                    ->label('Units Sold')
+                    ->helperText('Automatically tracked. Edit only for corrections.')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0),
+                
                 TextInput::make('download_url')
                     ->url()
                     ->default(null),
