@@ -72,16 +72,25 @@ class WebhookController extends Controller
         $order = Order::where('reference', $reference)->first();
         if (!$order) return;
 
+        // Check if already fulfilled
+        if ($order->payment_status === 'paid') {
+            Log::info('Order already fulfilled', ['reference' => $reference]);
+            return;
+        }
+
         $order->update([
             'payment_status'    => 'paid',
             'status'            => 'processing',
             'payment_reference' => $paymentRef,
         ]);
 
-        // Mark artworks as sold
+        // Decrement stock for each artwork
         foreach ($order->items as $item) {
             if ($item->itemable_type === \App\Models\Artwork::class) {
-                \App\Models\Artwork::where('id', $item->itemable_id)->update(['status' => 'sold']);
+                $artwork = $item->itemable;
+                if ($artwork) {
+                    $artwork->decrementStock($item->quantity);
+                }
             }
         }
 
@@ -110,15 +119,22 @@ class WebhookController extends Controller
         $order = DigitalProductOrder::find($orderId);
         if (!$order) return;
 
+        // Check if already fulfilled
+        if ($order->payment_status === 'paid') {
+            Log::info('Digital order already fulfilled', ['order_id' => $orderId]);
+            return;
+        }
+
         $order->update([
             'payment_status'    => 'paid',
             'payment_reference' => $paymentRef,
         ]);
 
-        // Decrement available licenses
+        // Decrement stock
         $tier = $order->tier;
         if ($tier) {
-            $tier->increment('licenses_sold');
+            $tier->increment('licenses_sold'); // Legacy field
+            $tier->decrementStock(1); // New inventory system
         }
 
         // Send download email

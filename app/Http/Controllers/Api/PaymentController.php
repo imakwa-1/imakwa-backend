@@ -133,6 +133,7 @@ class PaymentController extends Controller
                 'reference' => $order->reference,
                 'metadata' => [
                     'order_id' => $order->id,
+                    'order_type' => 'gallery',
                     'custom_fields' => [
                         [
                             'display_name' => 'Order Reference',
@@ -141,7 +142,7 @@ class PaymentController extends Controller
                         ],
                     ],
                 ],
-                'callback_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/payment/callback',
+                'callback_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/payment/callback?order_type=gallery',
             ]);
 
             if ($response->successful()) {

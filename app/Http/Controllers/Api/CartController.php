@@ -44,13 +44,26 @@ class CartController extends Controller
         $cart = $this->getCart($request);
 
         if ($request->item_type === 'artwork') {
-            $item = Artwork::where('is_active', true)->where('status', 'available')->findOrFail($request->item_id);
+            $item = Artwork::where('is_active', true)->findOrFail($request->item_id);
+            
+            // Check stock availability
+            if (!$item->isInStock()) {
+                return response()->json([
+                    'message' => 'This artwork is currently out of stock'
+                ], 422);
+            }
+            
             $type = Artwork::class;
         } else {
             $item = DigitalProductTier::where('is_active', true)->findOrFail($request->item_id);
+            
+            // Check if sold out
             if ($item->isSoldOut()) {
-                return response()->json(['message' => 'This tier is sold out'], 422);
+                return response()->json([
+                    'message' => 'This tier is sold out'
+                ], 422);
             }
+            
             $type = DigitalProductTier::class;
         }
 

@@ -88,6 +88,9 @@ Route::middleware('auth:sanctum')->prefix('orders')->group(function () {
     Route::get('/{id}',  [App\Http\Controllers\Api\OrderController::class, 'show']);
 });
 
+// Orders (public)
+Route::get('/orders/by-reference/{reference}', [App\Http\Controllers\Api\OrderController::class, 'byReference']);
+
 // Payments (public)
 Route::prefix('payments')->group(function () {
     Route::get('/paystack/verify',      [App\Http\Controllers\Api\PaymentController::class, 'paystackVerify']);
