@@ -12,8 +12,9 @@ class CartController extends Controller
 {
     private function getCart(Request $request)
     {
-        if ($request->user()) {
-            return Cart::firstOrCreate(['user_id' => $request->user()->id]);
+        $user = $request->user('sanctum') ?? $request->user();
+        if ($user) {
+            return Cart::firstOrCreate(['user_id' => $user->id]);
         }
         
         $sessionId = $request->header('X-Session-ID');
@@ -85,7 +86,8 @@ class CartController extends Controller
 
     public function merge(Request $request)
     {
-        if (!$request->user()) {
+        $user = $request->user('sanctum') ?? $request->user();
+        if (!$user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
@@ -99,7 +101,7 @@ class CartController extends Controller
             return response()->json(['message' => 'No session cart found']);
         }
 
-        $userCart = Cart::firstOrCreate(['user_id' => $request->user()->id]);
+        $userCart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         foreach ($sessionCart->items as $item) {
             $exists = $userCart->items()
