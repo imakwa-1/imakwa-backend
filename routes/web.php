@@ -1,56 +1,46 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
-    return ['Laravel' => app()->version()];
+    return view('welcome');
 });
 
-// Diagnostic endpoint - check if admin exists
-Route::get('/check-admin', function () {
-    $admin = \App\Models\User::where('email', 'admin@imakwa.com')->first();
+// Diagnostic endpoint - remove after testing
+Route::get('/check-inventory', function () {
+    $artworksColumns = Schema::getColumnListing('artworks');
+    $tiersColumns = Schema::getColumnListing('digital_product_tiers');
     
-    if (!$admin) {
-        return response()->json([
-            'exists' => false,
-            'message' => 'Admin user not found'
-        ]);
-    }
+    $statusCheck = DB::select("SHOW COLUMNS FROM artworks WHERE Field = 'status'");
+    $enumValues = !empty($statusCheck) ? $statusCheck[0]->Type : 'Not found';
+    
+    $sampleArtwork = DB::table('artworks')->first();
+    $sampleTier = DB::table('digital_product_tiers')->first();
     
     return response()->json([
-        'exists' => true,
-        'email' => $admin->email,
-        'role' => $admin->role,
-        'is_admin' => $admin->isAdmin(),
+        'artworks_table' => [
+            'has_stock_quantity' => in_array('stock_quantity', $artworksColumns),
+            'has_stock_sold' => in_array('stock_sold', $artworksColumns),
+            'status_enum' => $enumValues,
+            'sample_data' => $sampleArtwork ? [
+                'id' => $sampleArtwork->id,
+                'stock_quantity' => $sampleArtwork->stock_quantity ?? 'NULL',
+                'stock_sold' => $sampleArtwork->stock_sold ?? 'NULL',
+                'status' => $sampleArtwork->status ?? 'NULL',
+            ] : null,
+        ],
+        'digital_product_tiers_table' => [
+            'has_stock_quantity' => in_array('stock_quantity', $tiersColumns),
+            'has_stock_sold' => in_array('stock_sold', $tiersColumns),
+            'sample_data' => $sampleTier ? [
+                'id' => $sampleTier->id,
+                'stock_quantity' => $sampleTier->stock_quantity ?? 'NULL',
+                'stock_sold' => $sampleTier->stock_sold ?? 'NULL',
+            ] : null,
+        ],
+        'all_artworks_columns' => $artworksColumns,
+        'all_tiers_columns' => $tiersColumns,
     ]);
-});
-
-// Temporary route to seed admin - DELETE AFTER USE
-Route::get('/setup-admin-urgent', function () {
-    try {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@imakwa.com'],
-            [
-                'name' => 'Imakwa Admin',
-                'password' => Hash::make('Admin@2026!'),
-                'role' => 'admin',
-                'email_verified_at' => now(),
-            ]
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Admin user created successfully!',
-            'email' => 'admin@imakwa.com',
-            'password' => 'Admin@2026!',
-            'login_url' => url('/admin')
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ], 500);
-    }
 });
