@@ -101,17 +101,18 @@ class DigitalProductTierResource extends Resource
             TextColumn::make('stock_available')
                 ->label('Stock')
                 ->badge()
-                ->color(fn($record) => {
-                    if ($record->is_unlimited) return 'success';
-                    $available = $record->stock_available ?? 0;
-                    if ($available > 10) return 'success';
-                    if ($available > 0) return 'warning';
-                    return 'danger';
-                })
-                ->formatStateUsing(fn($record) => {
-                    if ($record->is_unlimited) return 'Unlimited';
-                    return ($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 'N/A');
-                }),
+                ->color(fn($record) => 
+                    $record->is_unlimited ? 'success' : (
+                        ($record->stock_available ?? 0) > 10 ? 'success' : (
+                            ($record->stock_available ?? 0) > 0 ? 'warning' : 'danger'
+                        )
+                    )
+                )
+                ->formatStateUsing(fn($record) => 
+                    $record->is_unlimited 
+                        ? 'Unlimited' 
+                        : (($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 'N/A'))
+                ),
             
             // Legacy columns (hidden by default)
             TextColumn::make('licenses_sold')

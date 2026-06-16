@@ -115,15 +115,12 @@ class ArtworkResource extends Resource
             TextColumn::make('stock_available')
                 ->label('Stock')
                 ->badge()
-                ->color(fn($record) => {
-                    $available = $record->stock_available ?? 0;
-                    if ($available > 5) return 'success';
-                    if ($available > 0) return 'warning';
-                    return 'danger';
-                })
-                ->formatStateUsing(fn($record) => 
-                    ($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 1)
-                ),
+                ->color(fn($record) => 
+                    ($record->stock_available ?? 0) > 5 ? 'success' : (
+                        ($record->stock_available ?? 0) > 0 ? 'warning' : 'danger'
+                    )
+                )
+                ->formatStateUsing(fn($record) => ($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 1)),
             
             TextColumn::make('status')->badge()->color(fn($state) => match($state) {
                 'available' => 'success',
