@@ -141,7 +141,7 @@ class PaymentController extends Controller
                         ],
                     ],
                 ],
-                'callback_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/checkout/success',
+                'callback_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/payment/callback',
             ]);
 
             if ($response->successful()) {
@@ -201,11 +201,6 @@ class PaymentController extends Controller
 
                     if (!$order) {
                         return response()->json(['error' => 'Order not found'], 404);
-                    }
-
-                    // Ensure the order belongs to the authenticated user
-                    if ($order->user_id !== auth()->id()) {
-                        return response()->json(['error' => 'Unauthorized'], 403);
                     }
 
                     // Fallback fulfillment check in case webhook hasn't processed it yet
