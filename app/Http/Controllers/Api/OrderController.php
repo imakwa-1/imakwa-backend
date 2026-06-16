@@ -120,4 +120,19 @@ class OrderController extends Controller
 
         return response()->json($order);
     }
+
+    public function byReference($reference)
+    {
+        $order = Order::where('reference', $reference)
+            ->orWhere('payment_reference', $reference)
+            ->orWhere('paystack_reference', $reference)
+            ->firstOrFail();
+
+        return response()->json([
+            'order_id'       => $order->id,
+            'payment_status' => $order->payment_status,
+            'status'         => $order->status,
+            'reference'      => $order->reference,
+        ]);
+    }
 }
