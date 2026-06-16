@@ -91,7 +91,7 @@ class PaymentController extends Controller
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'email' => 'required|email',
+            'email' => 'nullable|email',
         ]);
 
         $order = Order::findOrFail($request->order_id);
@@ -106,12 +106,17 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Order already paid'], 400);
         }
 
+        $email = $request->email ?? $order->shipping_email ?? auth()->user()->email;
+        if (!$email) {
+            return response()->json(['error' => 'The email field is required.'], 422);
+        }
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('services.paystack.secret_key'),
                 'Content-Type' => 'application/json',
             ])->post('https://api.paystack.co/transaction/initialize', [
-                'email' => $request->email,
+                'email' => $email,
                 'amount' => $order->total * 100, // Convert to kobo (for NGN) or cents
                 'currency' => $order->currency ?? 'NGN',
                 'reference' => $order->reference,

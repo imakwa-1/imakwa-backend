@@ -151,7 +151,7 @@ class WorldCupOrderController extends Controller
     {
         $request->validate([
             'order_id' => 'required|integer|exists:digital_product_orders,id',
-            'email' => 'required|email',
+            'email' => 'nullable|email',
         ]);
 
         $order = DigitalProductOrder::with('tier.product')->findOrFail($request->order_id);
@@ -160,12 +160,17 @@ class WorldCupOrderController extends Controller
             return response()->json(['error' => 'Order already paid'], 400);
         }
 
+        $email = $request->email ?? $order->email;
+        if (!$email) {
+            return response()->json(['error' => 'The email field is required.'], 422);
+        }
+
         try {
             $response = \Illuminate\Support\Facades\Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('services.paystack.secret_key'),
                 'Content-Type' => 'application/json',
             ])->post('https://api.paystack.co/transaction/initialize', [
-                'email' => $request->email,
+                'email' => $email,
                 'amount' => $order->amount_paid * 100, // Convert to kobo/cents
                 'currency' => $order->tier->currency ?? 'NGN',
                 'reference' => $order->reference,
