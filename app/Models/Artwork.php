@@ -50,7 +50,7 @@ class Artwork extends Model {
         
         // Auto-update status if out of stock
         if ($this->stock_available <= 0) {
-            $this->update(['status' => 'sold']);
+            $this->update(['status' => 'out_of_stock']); // ✅ Changed from 'sold'
         }
 
         return true;
