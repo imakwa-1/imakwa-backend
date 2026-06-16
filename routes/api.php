@@ -92,7 +92,7 @@ Route::middleware('auth:sanctum')->prefix('orders')->group(function () {
 Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
     Route::post('/stripe/intent',       [App\Http\Controllers\Api\PaymentController::class, 'stripeIntent']);
     Route::post('/paystack/init',       [App\Http\Controllers\Api\PaymentController::class, 'paystackInit']);
-    Route::get('/paystack/callback',    [App\Http\Controllers\Api\PaymentController::class, 'paystackCallback']);
+    Route::get('/paystack/verify',      [App\Http\Controllers\Api\PaymentController::class, 'paystackVerify']);
 });
 
 // World Cup Checkout

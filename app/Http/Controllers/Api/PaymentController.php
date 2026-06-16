@@ -141,7 +141,7 @@ class PaymentController extends Controller
                         ],
                     ],
                 ],
-                'callback_url' => config('app.url') . '/api/v1/payments/paystack/callback',
+                'callback_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/checkout/success',
             ]);
 
             if ($response->successful()) {
@@ -174,10 +174,10 @@ class PaymentController extends Controller
     }
 
     /**
-     * Paystack callback handler (optional - frontend can also handle this)
-     * GET /api/v1/payments/paystack/callback
+     * Paystack transaction verification endpoint
+     * GET /api/v1/payments/paystack/verify
      */
-    public function paystackCallback(Request $request)
+    public function paystackVerify(Request $request)
     {
         $reference = $request->query('reference');
 
@@ -194,24 +194,65 @@ class PaymentController extends Controller
                 $data = $response->json();
 
                 if ($data['data']['status'] === 'success') {
-                    // Payment successful - webhook will handle order update
+                    $order = Order::where('reference', $reference)
+                        ->orWhere('payment_reference', $reference)
+                        ->orWhere('paystack_reference', $reference)
+                        ->first();
+
+                    if (!$order) {
+                        return response()->json(['error' => 'Order not found'], 404);
+                    }
+
+                    // Ensure the order belongs to the authenticated user
+                    if ($order->user_id !== auth()->id()) {
+                        return response()->json(['error' => 'Unauthorized'], 403);
+                    }
+
+                    // Fallback fulfillment check in case webhook hasn't processed it yet
+                    if ($order->payment_status !== 'paid') {
+                        $order->update([
+                            'payment_status' => 'paid',
+                            'status' => 'processing',
+                            'payment_reference' => $reference,
+                        ]);
+
+                        // Mark artworks as sold
+                        foreach ($order->items as $item) {
+                            if ($item->itemable_type === \App\Models\Artwork::class) {
+                                \App\Models\Artwork::where('id', $item->itemable_id)->update(['status' => 'sold']);
+                            }
+                        }
+
+                        // Send order confirmation email
+                        try {
+                            \Illuminate\Support\Facades\Mail::to($order->shipping_email)
+                                ->send(new \App\Mail\GalleryOrderConfirmed($order));
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error('Failed to send gallery order email in verify route: ' . $e->getMessage());
+                        }
+                    }
+
                     return response()->json([
-                        'message' => 'Payment successful',
-                        'data' => $data['data'],
+                        'status' => 'success',
+                        'message' => 'Payment verified successfully',
+                        'order' => $order->load('items'),
                     ]);
                 }
 
                 return response()->json([
+                    'status' => 'failed',
                     'error' => 'Payment not successful',
-                    'status' => $data['data']['status'],
+                    'paystack_status' => $data['data']['status'],
                 ], 400);
             }
 
             return response()->json([
+                'status' => 'failed',
                 'error' => 'Payment verification failed',
             ], 500);
         } catch (\Exception $e) {
             return response()->json([
+                'status' => 'failed',
                 'error' => 'Payment verification failed',
                 'message' => $e->getMessage(),
             ], 500);
