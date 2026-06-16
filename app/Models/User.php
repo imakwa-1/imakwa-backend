@@ -58,4 +58,20 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->isAdmin();
     }
+
+    /**
+     * User's favorites relationship
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * User's orders relationship
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }
