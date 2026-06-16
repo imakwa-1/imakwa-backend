@@ -44,8 +44,33 @@ class DigitalProductTierResource extends Resource
                 ->columnSpanFull(),
             TextInput::make('price')->numeric()->required(),
             TextInput::make('currency')->default('USD'),
-            TextInput::make('license_count')->numeric()->required()->label('Total Licenses'),
-            TextInput::make('licenses_sold')->numeric()->default(0)->label('Licenses Sold'),
+            
+            // Legacy License System
+            TextInput::make('license_count')
+                ->numeric()
+                ->required()
+                ->label('Total Licenses (Legacy)')
+                ->helperText('Legacy field - use Stock Quantity below instead'),
+            TextInput::make('licenses_sold')
+                ->numeric()
+                ->default(0)
+                ->label('Licenses Sold (Legacy)')
+                ->disabled(),
+            
+            // New Inventory System
+            TextInput::make('stock_quantity')
+                ->label('Stock Quantity')
+                ->helperText('Leave empty for unlimited digital copies. Set a number for limited edition.')
+                ->numeric()
+                ->placeholder('Unlimited')
+                ->minValue(0),
+            TextInput::make('stock_sold')
+                ->label('Units Sold')
+                ->helperText('Automatically tracked. Edit only for corrections.')
+                ->numeric()
+                ->default(0)
+                ->minValue(0),
+            
             TextInput::make('download_url')->label('Download URL'),
             Toggle::make('is_active')->default(true),
         ]);
@@ -72,19 +97,39 @@ class DigitalProductTierResource extends Resource
                 ->money('USD')
                 ->sortable(),
             
-            TextColumn::make('licenses_sold')
-                ->label('Sold')
+            // New Stock System
+            TextColumn::make('stock_available')
+                ->label('Stock')
                 ->badge()
-                ->color('success'),
+                ->color(fn($record) => {
+                    if ($record->is_unlimited) return 'success';
+                    $available = $record->stock_available ?? 0;
+                    if ($available > 10) return 'success';
+                    if ($available > 0) return 'warning';
+                    return 'danger';
+                })
+                ->formatStateUsing(fn($record) => {
+                    if ($record->is_unlimited) return 'Unlimited';
+                    return ($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 'N/A');
+                }),
+            
+            // Legacy columns (hidden by default)
+            TextColumn::make('licenses_sold')
+                ->label('Sold (Legacy)')
+                ->badge()
+                ->color('success')
+                ->toggleable(isToggledHiddenByDefault: true),
             
             TextColumn::make('license_count')
-                ->label('Total'),
+                ->label('Total (Legacy)')
+                ->toggleable(isToggledHiddenByDefault: true),
             
             TextColumn::make('availability')
-                ->label('Available')
+                ->label('Available (Legacy)')
                 ->getStateUsing(fn ($record) => $record->license_count - $record->licenses_sold)
                 ->badge()
-                ->color(fn ($state) => $state > 0 ? 'success' : 'danger'),
+                ->color(fn ($state) => $state > 0 ? 'success' : 'danger')
+                ->toggleable(isToggledHiddenByDefault: true),
             
             IconColumn::make('is_active')
                 ->boolean()

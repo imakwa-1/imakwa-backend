@@ -56,6 +56,22 @@ class ArtworkResource extends Resource
             TextInput::make('year')->numeric(),
             TextInput::make('price')->numeric()->required(),
             TextInput::make('currency')->default('USD'),
+            
+            // Inventory Management
+            TextInput::make('stock_quantity')
+                ->label('Stock Quantity')
+                ->helperText('Total units available for sale (set to 1 for unique pieces)')
+                ->numeric()
+                ->default(1)
+                ->minValue(0)
+                ->required(),
+            TextInput::make('stock_sold')
+                ->label('Units Sold')
+                ->helperText('Automatically tracked. Edit only for corrections.')
+                ->numeric()
+                ->default(0)
+                ->minValue(0),
+            
             Select::make('category')->options([
                 'Paintings' => 'Paintings',
                 'Sculpture' => 'Sculpture',
@@ -73,9 +89,10 @@ class ArtworkResource extends Resource
                 'Central Africa' => 'Central Africa',
             ]),
             Select::make('status')->options([
-                'available' => 'Available',
-                'sold'      => 'Sold',
-                'reserved'  => 'Reserved',
+                'available'     => 'Available',
+                'sold'          => 'Sold',
+                'reserved'      => 'Reserved',
+                'out_of_stock'  => 'Out of Stock',
             ])->default('available'),
             Select::make('site_context')->options([
                 'gallery'  => 'Gallery',
@@ -93,10 +110,26 @@ class ArtworkResource extends Resource
             TextColumn::make('title')->searchable(),
             TextColumn::make('artist.display_name')->label('Artist')->sortable(),
             TextColumn::make('price')->money('USD')->sortable(),
+            
+            // Stock Information
+            TextColumn::make('stock_available')
+                ->label('Stock')
+                ->badge()
+                ->color(fn($record) => {
+                    $available = $record->stock_available ?? 0;
+                    if ($available > 5) return 'success';
+                    if ($available > 0) return 'warning';
+                    return 'danger';
+                })
+                ->formatStateUsing(fn($record) => 
+                    ($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 1)
+                ),
+            
             TextColumn::make('status')->badge()->color(fn($state) => match($state) {
                 'available' => 'success',
                 'sold'      => 'danger',
                 'reserved'  => 'warning',
+                'out_of_stock' => 'gray',
                 default     => 'gray',
             }),
             TextColumn::make('site_context')->badge(),
