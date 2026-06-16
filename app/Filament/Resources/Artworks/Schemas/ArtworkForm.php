@@ -45,8 +45,29 @@ class ArtworkForm
                 TextInput::make('currency')
                     ->required()
                     ->default('USD'),
+                
+                // Inventory Management Section
+                TextInput::make('stock_quantity')
+                    ->label('Stock Quantity')
+                    ->helperText('Total units available for sale (set to 1 for unique pieces)')
+                    ->numeric()
+                    ->default(1)
+                    ->minValue(0)
+                    ->required(),
+                TextInput::make('stock_sold')
+                    ->label('Units Sold')
+                    ->helperText('Automatically tracked. Edit only for corrections.')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0),
+                
                 Select::make('status')
-                    ->options(['available' => 'Available', 'sold' => 'Sold', 'reserved' => 'Reserved'])
+                    ->options([
+                        'available' => 'Available', 
+                        'sold' => 'Sold', 
+                        'reserved' => 'Reserved',
+                        'out_of_stock' => 'Out of Stock'
+                    ])
                     ->default('available')
                     ->required(),
                 Select::make('site_context')

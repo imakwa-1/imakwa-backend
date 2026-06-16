@@ -33,8 +33,30 @@ class ArtworksTable
                     ->sortable(),
                 TextColumn::make('currency')
                     ->searchable(),
+                
+                // Stock Information
+                TextColumn::make('stock_available')
+                    ->label('In Stock')
+                    ->badge()
+                    ->color(fn ($record) => {
+                        $available = $record->stock_available ?? 0;
+                        if ($available > 5) return 'success';
+                        if ($available > 0) return 'warning';
+                        return 'danger';
+                    })
+                    ->formatStateUsing(fn ($record) => 
+                        ($record->stock_available ?? 0) . ' / ' . ($record->stock_quantity ?? 1)
+                    )
+                    ->sortable(),
+                
                 TextColumn::make('status')
-                    ->badge(),
+                    ->badge()
+                    ->colors([
+                        'success' => 'available',
+                        'warning' => 'reserved',
+                        'danger' => 'sold',
+                        'secondary' => 'out_of_stock',
+                    ]),
                 TextColumn::make('site_context')
                     ->badge(),
                 TextColumn::make('category')
